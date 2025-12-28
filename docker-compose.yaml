@@ -1,47 +1,47 @@
-version: '3.8'
-
 services:
-  # 1. Baza Danych (PostgreSQL)
+  # Baza Danych (PostgreSQL)
   db:
-    image: postgres:15
+    image: postgres:14
     container_name: dailsy_db
+    restart: always
     environment:
-      POSTGRES_DB: dailsy_db
-      POSTGRES_USER: dailsy_user
-      POSTGRES_PASSWORD: secret_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - dailsy_pgdata:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - '${DB_PORT}:5432'
     networks:
       - dailsy_network
 
-  # 2. Backend API (Spring Boot)
+  # Backend API (Spring Boot)
   backend:
     build: ./backend
     container_name: dailsy_api
     ports:
-      - "8080:8080"
+      - '${SERVER_PORT}:8080'
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dailsy_db
-      - SPRING_DATASOURCE_USERNAME=dailsy_user
-      - SPRING_DATASOURCE_PASSWORD=secret_password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
       - db
     networks:
       - dailsy_network
 
-  # 3. Frontend (Next.js)
+  # Frontend (Next.js)
   frontend:
-    image: node:20-alpine
+    build: ./frontend
     container_name: dailsy_frontend
     working_dir: /app
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm run dev -- -p 3001 
+    command: npm run dev -- -p 3001
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - WATCHPACK_POLLING=true
     networks:
