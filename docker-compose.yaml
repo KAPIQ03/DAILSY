@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 1. Baza Danych (PostgreSQL)
+  db:
+    image: postgres:15
+    container_name: dailsy_db
+    environment:
+      POSTGRES_DB: dailsy_db
+      POSTGRES_USER: dailsy_user
+      POSTGRES_PASSWORD: secret_password
+    volumes:
+      - dailsy_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - dailsy_network
+
+  # 2. Backend API (Spring Boot)
+  backend:
+    build: ./backend
+    container_name: dailsy_api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/dailsy_db
+      - SPRING_DATASOURCE_USERNAME=dailsy_user
+      - SPRING_DATASOURCE_PASSWORD=secret_password
+    depends_on:
+      - db
+    networks:
+      - dailsy_network
+
+  # 3. Frontend (Next.js)
+  frontend:
+    image: node:20-alpine
+    container_name: dailsy_frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- -p 3001 
+    ports:
+      - "3001:3001"
+    environment:
+      - WATCHPACK_POLLING=true
+    networks:
+      - dailsy_network
+
+volumes:
+  dailsy_pgdata:
+
+networks:
+  dailsy_network:
