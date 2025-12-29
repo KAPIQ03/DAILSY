@@ -52,7 +52,6 @@ public class UserService {
         return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail());
     }
 
-
     public String login(LoginRequestDTO request)  {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
         User user = userOptional.orElseThrow(() -> new RuntimeException("User not found"));
