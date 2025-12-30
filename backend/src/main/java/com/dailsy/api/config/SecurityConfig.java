@@ -40,6 +40,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/posts/**").authenticated()
+                    .requestMatchers("/users/**").authenticated()
+                    .requestMatchers("/follows/**").authenticated()
                     .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -54,7 +56,6 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
 
