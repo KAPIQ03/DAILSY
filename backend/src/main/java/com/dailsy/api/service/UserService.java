@@ -4,6 +4,7 @@ import com.dailsy.api.dto.LoginRequestDTO;
 import com.dailsy.api.dto.RegisterRequestDTO;
 import com.dailsy.api.dto.UserResponseDTO;
 import com.dailsy.api.models.User;
+import com.dailsy.api.repositories.FollowRepository;
 import com.dailsy.api.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final FollowRepository followRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.followRepository = followRepository;
     }
 
     public UserResponseDTO registerUser(RegisterRequestDTO request) {
@@ -32,24 +35,30 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
 
         User savedUser = userRepository.save(newUser);
-        return mapToDTO(savedUser);
+        return mapToDTO(savedUser, null);
     }
 
-    public List<UserResponseDTO> getAllUsers() {
+    public List<UserResponseDTO> getAllUsers(Long currentUserId) {
+        User currentUser = currentUserId != null ? userRepository.findById(currentUserId).orElse(null) : null;
         return userRepository.findAll()
                 .stream()
-                .map(this::mapToDTO)
+                .map(user -> mapToDTO(user, currentUser))
                 .collect(Collectors.toList());
     }
     
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponseDTO getUserById(Long id, Long currentUserId) {
+        User currentUser = currentUserId != null ? userRepository.findById(currentUserId).orElse(null) : null;
         return userRepository.findById(id)
-                .map(this::mapToDTO)
+                .map(user -> mapToDTO(user,currentUser))
                 .orElse(null);
     }
 
-    private UserResponseDTO mapToDTO(User user) {
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail());
+    private UserResponseDTO mapToDTO(User user, User currentUser) {
+        boolean isFollowing = false;
+        if(currentUser != null){
+            isFollowing = followRepository.findByFollowerAndFollowed(currentUser, user).isPresent();
+        }
+        return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), isFollowing);
     }
 
     public String login(LoginRequestDTO request)  {
