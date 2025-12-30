@@ -2,12 +2,16 @@ package com.dailsy.api.service;
 
 import com.dailsy.api.dto.LoginRequestDTO;
 import com.dailsy.api.dto.RegisterRequestDTO;
+import com.dailsy.api.dto.UserProfileUpdateDTO;
 import com.dailsy.api.dto.UserResponseDTO;
 import com.dailsy.api.models.User;
 import com.dailsy.api.repositories.FollowRepository;
 import com.dailsy.api.repositories.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,10 +57,40 @@ public class UserService {
                 .orElse(null);
     }
 
+    @Transactional
+    public UserResponseDTO updateUserProfile(UserProfileUpdateDTO updateDTO) {
+        User authenticatedUser = getAuthenticatedUser();
+
+        if (updateDTO.getEmail() != null && !updateDTO.getEmail().equals(authenticatedUser.getEmail())) {
+            if (userRepository.findByEmail(updateDTO.getEmail()).isPresent()) {
+                throw new RuntimeException("Email is already taken.");
+            }
+            authenticatedUser.setEmail(updateDTO.getEmail());
+        }
+
+        if (updateDTO.getUsername() != null && !updateDTO.getUsername().isBlank()) {
+            authenticatedUser.setUsername(updateDTO.getUsername());
+        }
+
+        User updatedUser = userRepository.save(authenticatedUser);
+        return mapToDTO(updatedUser, updatedUser);
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalEmail = authentication.getName();
+
+        return userRepository.findByEmail(currentPrincipalEmail)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found in database."));
+    }
+
+
     private UserResponseDTO mapToDTO(User user, User currentUser) {
         boolean isFollowing = false;
         if(currentUser != null){
-            isFollowing = followRepository.findByFollowerAndFollowed(currentUser, user).isPresent();
+            if (!currentUser.getId().equals(user.getId())) {
+                isFollowing = followRepository.findByFollowerAndFollowed(currentUser, user).isPresent();
+            }
         }
         return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), isFollowing);
     }

@@ -1,5 +1,6 @@
 package com.dailsy.api.controller;
 
+import com.dailsy.api.dto.UserProfileUpdateDTO;
 import com.dailsy.api.dto.UserResponseDTO;
 import com.dailsy.api.models.User;
 import com.dailsy.api.repositories.UserRepository;
@@ -42,18 +43,32 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getMe() {
         Long currentUserId = getCurrentUserId();
-        if(currentUserId == null) {
-            return ResponseEntity.status(401).build(); // Unauthorized
+        if (currentUserId == null) {
+             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok(userService.getUserById(currentUserId,currentUserId)); // Tymczasowo hardcoded ID 1
+        UserResponseDTO user = userService.getUserById(currentUserId, currentUserId);
+        return ResponseEntity.ok(user);
     }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDTO> updateMe(@RequestBody UserProfileUpdateDTO updateDTO) {
+        try {
+            UserResponseDTO updatedUser = userService.updateUserProfile(updateDTO);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return null;
         }
         String email = authentication.getName();
-        return userRepository.findByEmail(email).map(User::getId).orElse(null);
+        return userRepository.findByEmail(email)
+                .map(User::getId)
+                .orElse(null);
     }
 }
