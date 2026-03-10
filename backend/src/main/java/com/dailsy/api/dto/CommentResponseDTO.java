@@ -8,15 +8,17 @@ public class CommentResponseDTO {
     private LocalDateTime createdAt;
     private String authorUsername;
     private Long postId;
+    private Long authorId;
 
     public CommentResponseDTO() {}
 
-    public CommentResponseDTO(Long id, String content, LocalDateTime createdAt, String authorUsername, Long postId) {
+    public CommentResponseDTO(Long id, String content, LocalDateTime createdAt, String authorUsername, Long postId, Long authorId) {
         this.id = id;
         this.content = content;
         this.createdAt = createdAt;
         this.authorUsername = authorUsername;
         this.postId = postId;
+        this.authorId = authorId;
     }
 
     public Long getId() {
@@ -57,6 +59,14 @@ public class CommentResponseDTO {
 
     public void setPostId(Long postId) {
         this.postId = postId;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
     }
 
 }

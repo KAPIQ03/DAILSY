@@ -8,15 +8,19 @@ public class PostResponseDTO {
     private Integer mood;
     private LocalDateTime createdAt;
     private String authorUsername;
+    private Long authorId;
+    private boolean hasReacted;
 
     public PostResponseDTO() {}
 
-    public PostResponseDTO(Long id, String content, Integer mood, LocalDateTime createdAt, String authorUsername) {
+    public PostResponseDTO(Long id, String content, Integer mood, LocalDateTime createdAt, String authorUsername, Long authorId, boolean hasReacted) {
         this.id = id;
         this.content = content;
         this.mood = mood;
         this.createdAt = createdAt;
         this.authorUsername = authorUsername;
+        this.authorId = authorId;
+        this.hasReacted = hasReacted;
     }
 
     public Long getId() {
@@ -57,5 +61,21 @@ public class PostResponseDTO {
 
     public void setAuthorUsername(String authorUsername) {
         this.authorUsername = authorUsername;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public boolean isHasReacted() {
+        return hasReacted;
+    }
+
+    public void setHasReacted(boolean hasReacted) {
+        this.hasReacted = hasReacted;
     }
 }

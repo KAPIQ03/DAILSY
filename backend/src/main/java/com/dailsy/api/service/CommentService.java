@@ -71,7 +71,8 @@ public class CommentService {
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getAuthor().getUsername(),
-                comment.getPost().getId()
+                comment.getPost().getId(),
+                comment.getAuthor().getId()
         );
     }
 }
