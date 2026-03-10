@@ -85,6 +85,14 @@ public class UserService {
     }
 
 
+    public List<UserResponseDTO> searchUsers(String query, Long currentUserId) {
+        User currentUser = currentUserId != null ? userRepository.findById(currentUserId).orElse(null) : null;
+        return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query)
+                .stream()
+                .map(user -> mapToDTO(user, currentUser))
+                .collect(Collectors.toList());
+    }
+
     private UserResponseDTO mapToDTO(User user, User currentUser) {
         boolean isFollowing = false;
         if(currentUser != null){

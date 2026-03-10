@@ -30,6 +30,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(currentUserId));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponseDTO>> searchUsers(@RequestParam("query") String query) {
+        Long currentUserId = getCurrentUserId();
+        return ResponseEntity.ok(userService.searchUsers(query, currentUserId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable("id") Long id) {
         Long currentUserId = getCurrentUserId();

@@ -24,7 +24,11 @@ public class PostController {
     }
     @GetMapping
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-        List<PostResponseDTO> posts = postService.getAllPosts();
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(postService.getAllPosts());
+    }
+
+    @GetMapping("/feed")
+    public ResponseEntity<List<PostResponseDTO>> getFeedPosts() {
+        return ResponseEntity.ok(postService.getFeedPosts());
     }
 }
